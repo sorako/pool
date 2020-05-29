@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>test Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>  
+  
+
+</head>
+<body>
+
+<div class="jumbotron text-center">
+  
+</div>
+<div class="container">
+  <div class="row" style="margin-bottom: 50px;">
+    <div class="col-sm-4">
+    
+    </div>
+    <div class="col-sm-4">
+      <select class="action form-control" id="categoryEvent" onchange="myFunction(value)">
+      </select>
+    </div>
+    <div class="col-sm-4">
+     
+    </div>
+  </div>
+</div>  
+<div class="container">
+  <div class="row">
+    <div class="col-sm-8">
+       <h1><p id="demo"></p></h1> 
+    </div>
+    <div class="col-sm-3">
+      <h1><p id="symbol"></p></h1> 
+    </div>
+    <div class="col-sm-3">
+      
+    </div>
+    <div class="col-sm-3">
+      
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-3">
+      <div class="card" style="border-color: #337ab7; width:200px; height:150px; color: white;">
+        <h3 style="background-color: #337ab7;width: 100%;height: 100px;"> <p id="same" style="text-align: center; margin-top: 35px;"></p></h3>
+        <div class="card-body"style="background-color: #f1f1f1;;color: black;text-align: center;"id="priceChange"></div>
+      </div>
+    </div>
+    <div class="col-sm-3">
+      <div class="card" style="border-color: #ffbd2e; width:200px; height:150px; color: #8b6e3c;">
+        <h4 style="background-color: #ffbd2e;width: 100%;height: 100px;"> <p id="same" style="text-align: center; margin-top: 35px;"></p></h4>
+        <div class="card-body"style="background-color: #f1f1f1;color: black;text-align: center;" >時価総額</div>
+      </div>
+    </div>
+    <div class="col-sm-3">
+      <div class="card" style="border-color: #dcbcbc; width: 200px; height:150px;color: #a75858;">
+        <h4 style="background-color: #dcbcbc;width: 100%;height: 100px;"> <p id="percentChange" style="text-align: center; margin-top: 35px;"></p></h4>
+        <div class="card-body"style="background-color: #f1f1f1;color: black;text-align: center;">ROA</div>
+      </div>
+      <p id="demo"></p>
+    </div>
+    <div class="col-sm-3">
+      <div class="card" style="border-color: #dcbcbc; width: 200px;height:150px;color: #a75858;">
+        <h4 style="background-color: #dcbcbc;width: 100%;height: 100px;"> <p id="percentChange1" style="text-align: center; margin-top: 35px;"></p></h4>
+        <div class="card-body"style="background-color: #f1f1f1;color: black;text-align: center;">ROE</div>
+      </div>
+      <p id="demo"></p>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-sm-6">
+      <canvas id="barsChart" width="200" height="200" ></canvas>
+    </div>
+    
+    <div class="col-sm-6">
+      <canvas id="line-chart" width="200" height="200"></canvas>
+    </div>  
+  </div>  
+</div>
+<script type="text/javascript">
+  var url = "http://localhost:5000/api";
+  var ur1 = "http://localhost:5000/api_pl";
+  var ur2 = "http://localhost:5000/api_bs";
+  var id = 0
+  var xhr;
+  
+  if (window.XMLHttpRequest) {
+      xhr = new XMLHttpRequest();
+  } else {
+      xhr = new ActiveXObject("Microsoft.XMLHTTP");
+  }
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      var res = JSON.parse(xhr.responseText),
+        data = res.data;
+      for(var i = 0; i < data.length; i++) {
+        var ele = document.createElement("option");
+        ele.value = data[i].id;
+        $(".action").append("<option>"+ele.value+"</option>"); 
+      }
+    }
+  }
+  xhr.open("GET", url, true);
+  xhr.send();
+
+  
+  //id avaj company_name uzuuleh
+  function myFunction(id) {
+    $.getJSON('http://localhost:5000/api/'+id+'').done(function(datas) {
+      var symbol = datas.data[0].symbol
+      document.getElementById("demo").innerHTML = datas.data[0].company_name;
+      document.getElementById("same").innerHTML = datas.data[0].stock_price +"ドル";
+      document.getElementById("priceChange").innerHTML = "前日比 :"+datas.data[0].priceChange +"ドル";
+      document.getElementById("percentChange").innerHTML = datas.data[0].percentChange ;
+      document.getElementById("percentChange1").innerHTML = datas.data[0].percentChange ;
+      document.getElementById("symbol").innerHTML = datas.data[0].symbol.split('OTC:').join('');  
+    })
+    $.getJSON(ur1).done(function(datas) {
+      var i = 0
+      arrPeriod = []
+      arrRevenue = []
+      arr_Gross_sales_profit = []
+      arr_Net_income = []
+      for (i = 0; i < datas.data.length; i++) {
+        var company_id = datas.data[i].company_id
+        if(id == company_id){
+          var company = datas.data[i]
+          var period = company.period.toString()
+          var revenue = parseInt(company.revenues)
+          var sales_profit = parseInt(company.operating_income)
+          var net_income = parseInt(company.net_income)
+          arrPeriod.push(period)
+          arrRevenue.push(revenue)
+          arr_Gross_sales_profit.push(sales_profit)
+          arr_Net_income.push(net_income)
+        } 
+      }
+      var arrayLabel = arrPeriod
+      var data1 = arrRevenue
+      var data2 = arr_Gross_sales_profit
+      var data3 = arr_Net_income
+      chart(arrayLabel,data1,data2,data3)
+      console.log(data1)
+      total_assets = []
+      adequacy_ratios = []
+      roas = []
+      roes = []
+      $.getJSON(ur2).done(function(datas) {
+        for (i = 0; i < datas.data.length; i++) {
+          var company_id = datas.data[i].company_id
+          if(id == company_id){
+            var bs = datas.data[i]
+            var total_asset = parseInt(bs.total_asset)
+            total_assets.push(total_asset)
+            var adequacy_ratio =  parseInt(bs.adequacy_ratio)
+            adequacy_ratios.push(adequacy_ratio)
+            var roa =  parseInt(bs.ROA)
+            roas.push(roa)
+            var roe =  parseInt(bs.ROE)
+            roes.push(roe)
+          }
+        }
+        
+        var data4 = adequacy_ratios
+        var data5 = roas
+        var data6 = roes
+        chartLine(arrayLabel,data5,data5,data6)
+        console.log(data4)
+        console.log(data5)
+        console.log(data6)
+      })  
+    })  
+  } 
+  function chart(arrayLabel,data1,data2,data3){
+    var ctx = document.getElementById("barsChart");
+    var barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+        labels:arrayLabel ,
+        datasets: [{
+          backgroundColor: '#3366ff',
+          label: '売上',
+          data: data1
+          }]
+        }
+    });
+  
+    function addData(chart, label, color, data) {
+        chart.data.datasets.push({
+          label: label,
+          backgroundColor: color,
+          data: data
+        });
+        chart.update();
+    }
+    addData(barChart, '営業利益', '#ff9900', data2);
+    addData(barChart, '純利益', '#ff6666', data3);
+  }
+
+  function chartLine(arrayLabel,data4,data5,data6){
+    new Chart(document.getElementById("line-chart"), {
+    type: 'line',
+    data: {
+      labels: arrayLabel,
+      datasets: [{ 
+          data: data4,
+          label: "営業利益率",
+          borderColor: "#F0BE2C",
+          fill: false
+        }, { 
+          data: data5,
+          label: "ROA",
+          borderColor: "#4331F5",
+          fill: false
+        }, { 
+          data: data6,
+          label: "ROE",
+          borderColor: "#e84d60",
+          fill: false
+        }
+      ]
+    },
+    // options: {
+    //   title: {
+    //     display: true,
+    //     text: 'World population per region (in millions)'
+    //   }
+    // }
+  });
+  }
+</script>
+</body>
+</html>
+
