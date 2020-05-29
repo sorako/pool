@@ -36,6 +36,13 @@ class Quarterly_dataBS(Resource):
         return {'data': [dict(zip(tuple(query.keys()), i)) for i in query.cursor]}
         return jsonify(result)
 
+class Quarterly_dataCF(Resource):
+    @staticmethod
+    def get():
+        conn = db_connect.connect()
+        query = conn.execute("select * from quarterly_dataCF  ")
+        return {'data': [dict(zip(tuple(query.keys()), i)) for i in query.cursor]}
+        return jsonify(result)
 
 class Employees_Name(Resource):
     def get(self, employee_id):
@@ -48,6 +55,7 @@ class Employees_Name(Resource):
 api.add_resource(Employees, '/api')
 api.add_resource(Quarterly_dataPL, '/api_pl')
 api.add_resource(Quarterly_dataBS, '/api_bs')
+api.add_resource(Quarterly_dataCF, '/api_cf')
 api.add_resource(Employees_Name, '/api/<employee_id>')
 
 if __name__ == '__main__':
