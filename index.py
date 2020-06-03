@@ -13,6 +13,7 @@ mySql.delete2Data()
 
 mySql.delete3Data()
 
+
 def unit_exchanger(s):
     """
     unit_changer is changing monetary units into digits.
@@ -85,15 +86,17 @@ def unit_exchanger_fin(ll=None):
 
     return list(map(unit_exchanger, ll))
 
-markets = ["GOOGl", "AAPL", "ABBV", "GWPH","TCNNF","GTBIF","CURLF","KSHB","TLLTF","CRLBF","TLRY","HRVSF"
-           ,"AYRSF","ITHUF","GTBIF","MEDIF","APHA","CWBHF","ACRGF","GRWG","SNDL","TRSSF","PLNHF","HSDEF","GGBXF"
-           ,"CVSI","VLNCF","LHSIF","NACNF","IIPR", "MRMD","HEXO","CXXIF","FFLWF","INDXF","LQSIF","CRON","YCBD"
-           ,"VFF","SPRWF","VREOF","MJARF","FFNTF"]
+
+markets = ["GOOGl", "AAPL", "ABBV", "GWPH", "TCNNF", "GTBIF", "CURLF", "KSHB", "TLLTF", "CRLBF", "TLRY", "HRVSF"
+    , "AYRSF", "ITHUF", "GTBIF", "MEDIF", "APHA", "CWBHF", "ACRGF", "GRWG", "SNDL", "TRSSF", "PLNHF", "HSDEF", "GGBXF"
+    , "CVSI", "VLNCF", "LHSIF", "NACNF", "IIPR", "MRMD", "HEXO", "CXXIF", "FFLWF", "INDXF", "LQSIF", "CRON", "YCBD"
+    , "VFF", "SPRWF", "VREOF", "MJARF", "FFNTF"]
 for i in range(len(markets)):
 
-    url = "https://www.marketwatch.com/investing/stock/"+markets[i]+"/financials/income/quarter"
+    url = "https://www.marketwatch.com/investing/stock/" + markets[i] + "/financials/income/quarter"
     header = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/69.0.3497.100 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
     }
     r = requests.get(url, headers=header)
@@ -105,8 +108,8 @@ for i in range(len(markets)):
     company_name = soup.find("h2").text.strip("Quarterly Financials for ")
     print("企業名:", company_name)
 
-    #symbols
-    symbols = soup.find("p",{'class':'textdeemphasized'}).text
+    # symbols
+    symbols = soup.find("p", {'class': 'textdeemphasized'}).text
     symbol = symbols.lstrip().rstrip()
     print("企業名:", symbol)
 
@@ -127,8 +130,8 @@ for i in range(len(markets)):
     percentChange = soup.find("span", "bgPercentChange").text
     print('前日比   　', percentChange)
 
-    #save db
-    mySql.insertData( company_name, stock_price, symbol, previousDay, priceChange, percentChange)
+    # save db
+    mySql.insertData(company_name, stock_price, symbol, previousDay, priceChange, percentChange)
     # company id 
     compamy_id = mySql.company_id()
 
@@ -146,8 +149,7 @@ for i in range(len(markets)):
         currency = th_row_[0]
         currency_text = currency.text
         currency_in_short = currency_text.replace("millions.", "")
-        Period_list = []
-        Period_list.append(period_row[i].text)
+        Period_list = [period_row[i].text]
 
         """
         四半期データの取得ーー売上金額の取得、tdタグの費を取得、繰り返し5期分を取得
@@ -158,9 +160,8 @@ for i in range(len(markets)):
         revenue_sum = soup.find_all("tr", {"class": "partialSum"})[0]
         revenues = revenue_sum.find_all("td", {"class": "valueCell"})
 
-        Revenue_list = []
-        Revenue_list.append(revenues[i].text)
-        Total_revenue = unit_exchanger_fin(Revenue_list) 
+        Revenue_list = [revenues[i].text]
+        Total_revenue = unit_exchanger_fin(Revenue_list)
         """
         四半期データの取得ーーCost of Goods(COGS)販売経費の取得、繰り返し5期分を取得
         COGS（販売経費）は必ず最初のtr class=mainRowに格納されているからわかりやすい
@@ -168,8 +169,7 @@ for i in range(len(markets)):
         main_rows = soup.find("tr", {"class": "mainRow"})
         cogs_all = main_rows.find_all("td", {"class": "valueCell"})
 
-        cogs = []
-        cogs.append(cogs_all[i].text)
+        cogs = [cogs_all[i].text]
         Total_cogs = unit_exchanger_fin(cogs)
 
         """
@@ -196,7 +196,7 @@ for i in range(len(markets)):
         # 営業利益と営業利益率の計算
 
         Gross_sales_profit = []
-        gs=0
+        gs = 0
         if "NA" == Total_revenue[gs] or "NA" == Total_cogs[gs] or "NA" == Total_SGA[gs]:
             Gross_sales_profit.append("NA")
         elif Total_SGA[gs] == Total_cogs[gs]:
@@ -220,13 +220,13 @@ for i in range(len(markets)):
         NetIncome_Row_name = netincome_row.find("td", {"class": "rowTitle"})
         netIncome_all = netincome_row.find_all("td", {"class": "valueCell"})
 
-        NetIncome = []
-        NetIncome.append(netIncome_all[i].text)
+        NetIncome = [netIncome_all[i].text]
         NetIncome_Value = unit_exchanger_fin(NetIncome)
         i += 1
         gs += 1
-        PL = Period_list,Total_cogs,Total_SGA,Gross_sales_profit,Gross_sales_margin,NetIncome_Value
-        mySql.insertDataPL( Period_list[0], Total_cogs[0], Total_SGA[0], Gross_sales_profit[0], Gross_sales_margin[0], NetIncome_Value[0],compamy_id[0])
+        PL = Period_list, Total_cogs, Total_SGA, Gross_sales_profit, Gross_sales_margin, NetIncome_Value
+        mySql.insertDataPL(Period_list[0], Total_cogs[0], Total_SGA[0], Gross_sales_profit[0], Gross_sales_margin[0],
+                           NetIncome_Value[0], compamy_id[0])
         print(PL)
 
     # Diluted EPSの取得(later)
@@ -237,7 +237,7 @@ for i in range(len(markets)):
     """
     print(colored("#####四半期データ  CF  ######", "green"))
 
-    url_cs = "https://www.marketwatch.com/investing/stock/"+markets[i]+"/financials/cash-flow/quarter"
+    url_cs = "https://www.marketwatch.com/investing/stock/" + markets[i] + "/financials/cash-flow/quarter"
     cs = requests.get(url_cs)
     soup_cs = BeautifulSoup(cs.content, "html.parser")
 
@@ -255,19 +255,15 @@ for i in range(len(markets)):
     Net_FS_CF_Values = Net_FS_CF_row.find_all("td", {"class": "valueCell"})
     Net_FS_CF_rowTitle = Net_FS_CF_row.find("td", {"class": "rowTitle"})
 
-
     b = 0
     for b in range(5):
-        Net_OP_CF = []
-        Net_OP_CF.append(Net_OP_CF_Values[b].text)
+        Net_OP_CF = [Net_OP_CF_Values[b].text]
         Net_OP_Cash_Flow_Value = unit_exchanger_fin(Net_OP_CF)
 
-        Net_Inv_CF = []
-        Net_Inv_CF.append(Net_Inv_CF_Values[b].text)
+        Net_Inv_CF = [Net_Inv_CF_Values[b].text]
         Net_Inv_CF_Total = unit_exchanger_fin(Net_Inv_CF)
 
-        Net_FS_CF = []
-        Net_FS_CF.append(Net_FS_CF_Values[b].text)
+        Net_FS_CF = [Net_FS_CF_Values[b].text]
         Net_financial_CF = unit_exchanger_fin(Net_FS_CF)
 
         FCF = []
@@ -279,8 +275,8 @@ for i in range(len(markets)):
 
         gs += 1
         b += 1
-        CF = Net_OP_Cash_Flow_Value,Net_Inv_CF_Total,Net_financial_CF,FCF
-        mySql.insertDataCF( Net_OP_Cash_Flow_Value[0], Net_Inv_CF_Total[0], Net_financial_CF[0], FCF[0], compamy_id[0])
+        CF = Net_OP_Cash_Flow_Value, Net_Inv_CF_Total, Net_financial_CF, FCF
+        mySql.insertDataCF(Net_OP_Cash_Flow_Value[0], Net_Inv_CF_Total[0], Net_financial_CF[0], FCF[0], compamy_id[0])
         print(CF)
 
     print("###########################")
@@ -291,7 +287,7 @@ for i in range(len(markets)):
     """
 
     print(colored("#####四半期データ  BS  ######", "green"))
-    url_bs = "https://www.marketwatch.com/investing/stock/"+markets[i]+"/financials/balance-sheet/quarter"
+    url_bs = "https://www.marketwatch.com/investing/stock/" + markets[i] + "/financials/balance-sheet/quarter"
     bs = requests.get(url_bs)
     soup_bs = BeautifulSoup(bs.content, "html.parser")
 
@@ -302,8 +298,7 @@ for i in range(len(markets)):
 
     d = 0
     for d in range(5):
-        Total_Asset_Cash = []
-        Total_Asset_Cash.append(Total_Asset_Values[d].text)
+        Total_Asset_Cash = [Total_Asset_Values[d].text]
         Total_Asset_Cash_Value = unit_exchanger_fin(Total_Asset_Cash)
 
         # Total_Shareholder's Equity の取り込み
@@ -314,8 +309,7 @@ for i in range(len(markets)):
 
         Total_SH_Values = Total_SH_Row.find_all("td", {"class": "valueCell"})
         Total_SH_rowTitle = Total_SH_Row.find("td", {"class": "rowTitle"})
-        Total_SH_Equity = []
-        Total_SH_Equity.append(Total_SH_Values[d].text)
+        Total_SH_Equity = [Total_SH_Values[d].text]
         Total_SH_Equity_Value = unit_exchanger_fin(Total_SH_Equity)
 
         """
@@ -333,7 +327,6 @@ for i in range(len(markets)):
 
         # ROA総資産利益率（営業利益/ 資産Asset)
         ROA = []
-
         if "NA" == Gross_sales_profit[gs]:
             ROA.append("NA")
         else:
@@ -349,8 +342,9 @@ for i in range(len(markets)):
             ROE[gs] = '{:.1%}'.format(ROE[gs])
         gs += 1
         d += 1
-        BS =Total_Asset_Cash_Value[0],  Total_SH_Equity_Value, Capital_Ratio, ROA ,ROE
-        mySql.insertDataBS( Total_Asset_Cash_Value[0], Capital_Ratio[0], ROA[0], ROE[0], Total_SH_Equity_Value[0], compamy_id[0])
+        BS = Total_Asset_Cash_Value[0], Total_SH_Equity_Value, Capital_Ratio, ROA, ROE
+        mySql.insertDataBS(Total_Asset_Cash_Value[0], Capital_Ratio[0], ROA[0], ROE[0], Total_SH_Equity_Value[0],
+                           compamy_id[0])
         print(BS)
 
 # def data_pull():
@@ -359,8 +353,4 @@ for i in range(len(markets)):
 # def run_schedule():
 #     while True:
 #         schedule.run_pending()
-#         time.sleep(1)   
-
-
-
-
+#         time.sleep(1)
