@@ -86,7 +86,7 @@
     </div>  
   </div> 
   <div class="row">
-    <div class="col-sm-6" id="chartContainer">
+    <div class="col-sm-6">
       <canvas id="barChart" width="200" height="200" ></canvas>
     </div>
     
@@ -96,66 +96,6 @@
   </div>  
 </div>
 <script type="text/javascript" src="index.js"></script>
-1
-<script>
-var ctx = document.getElementById("custPassedChart").getContext("2d");;
-var myChart2 = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: ['sticks','stones','bones'],
-        datasets: [{
-            label: 'Amount',
-            data: [10,23,45],
-            backgroundColor: 'rgba(0,0,255,0.2)' ,
-            borderColor: 'rgba(0,0,255,0.2)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        legend: {
-            display: false
-            },
-        tooltips: {
-           mode: 'label',
-           label: 'mylabel',
-           callbacks: {
-               label: function(tooltipItem, data) {
-                   return tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }, },
-        },
-        scales: {
-            yAxes: [{
-                ticks: {
-                    callback: function(label, index, labels) { return label/1000; },
-                    beginAtZero:true,
-                    fontSize: 10,
-                },
-                gridLines: {
-                    display: false
-                },
-                scaleLabel: { 
-                    display: true,
-                    labelString: '000\'s',
-                    fontSize: 10,
-                }
-            }],
-            xAxes: [{
-                ticks: {
-                    beginAtZero: true,
-                    fontSize: 10
-                },
-                gridLines: {
-                    display:false
-                },
-                scaleLabel: {
-                    display: true,
-                    fontSize: 10,
-               }
-            }]
-        }
-    }
-});
-</script>
-
 </body>
 </html>
 
