@@ -48,7 +48,6 @@ function myFunction(id) {
   // :param percentage_list:
   // :return:
     for (nzr = 0; nzr < 5; nzr++){
-        console.log("percentage_list"+percentage_list)
       if (0 == percentage_list[nzr]){
 
         percentage_list[nzr] = "non";
@@ -57,7 +56,11 @@ function myFunction(id) {
      return percentage_list ; 
   }     
 
- $.getJSON('http://54.213.65.49/api/'+id+'').done(function(datas) {
+  $.getJSON('http://54.213.65.49/api/'+id+'').done(function(datas) {
+    var substring = "OTC";
+    var substring1 = "NAS";
+    var substring2 = "NYS";
+    var substring3 = "ASE";
     var market = ["OTC","NAS","NYS","ASE"]
     var symbol = datas.data[0].symbol
     document.getElementById("demo").innerHTML = datas.data[0].company_name;
@@ -104,7 +107,6 @@ function myFunction(id) {
     var y_min = Math.min.apply(Math, zero_GSP);
     if (Math.min.apply(Math, zero_GSP) <= 0 || Math.min.apply(Math, netIncome_Value)<= 0 ) {
       if(Math.min.apply(Math, zero_GSP) <= Math.min.apply(Math, netIncome_Value)){
-         console.log("hello")
         y_min = Math.min.apply(Math, zero_GSP);
       }else{
         y_min = Math.min.apply(Math, netIncome_Value);
@@ -124,7 +126,7 @@ function myFunction(id) {
           var bs = datas.data[i];
           var total_asset = parseInt(bs.total_asset);
           total_assets.push(total_asset);
-          var adequacy_ratio =  parseInt(bs.adequacy_ratio);
+          var adequacy_ratio =  parseInt(bs.tot_shareholder_equity);
           adequacy_ratios.push(adequacy_ratio);
           var roa =  parseInt(bs.ROA);
           roas.push(roa);
@@ -154,7 +156,7 @@ function myFunction(id) {
         if(adequacy_ratios[gs] == 0){   
           roe_float.push(0) 
         }else{
-          roe_float.push(Math.round(netIncome_Value[gs] / adequacy_ratios[gs], 3)) 
+          roe_float.push(Math.round(netIncome_Value[gs] / adequacy_ratios[gs], 3))
         }
       }
 
@@ -192,10 +194,9 @@ function myFunction(id) {
       var data4 = non_converter(gross_sales_margin_float);
       var data5 = non_converter(roa_float);
       var data6 = non_converter(roe_float);
-
-      console.log(":::::::::"+data4)
-      console.log(":::::::::"+data5)
-      console.log(":::::::::"+data6)
+      console.log("data4 "+data4)
+      console.log("data5 "+data5)
+      console.log("data6 "+data6)
       chartLine(arrayLabel,data4,data5,data6);
     })  
     var net_OP_Cash_Flow_Value =[];
@@ -363,7 +364,6 @@ function charts(arrayLabel,data1,data2,data3){
         mode: 'label',
         callbacks: {
           title :function(tooltipItem, data){
-            console.log("::::::::"+tooltipItem.labes);
             return "期間"+ tooltipItem.yLabel;
           },
           label: function(tooltipItem, data) {
