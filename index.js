@@ -252,8 +252,10 @@ function charts(arrayLabel,data1,data2,data3){
       data: data3
     }]
   };
-  var ctx = document.getElementById("chart-bars");
-  var barChart = new Chart(ctx, {
+  var ctxBar = document.getElementById("chart-bars").getContext("2d");
+  if(window.bar != undefined) 
+  window.bar.destroy(); 
+  window.bar = new Chart(ctxBar, {
     type: 'bar',
     data: barChartData,
     options:{
