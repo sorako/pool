@@ -3,7 +3,39 @@ import mysql.connector
 mydb = mysql.connector.connect(user='root', host='localhost', password='', database='cannabistock')
 
 mycursor = mydb.cursor()
-print("hello world123")
+
+def deleteData():
+    sql_Delete_query = "DELETE FROM  company;"
+    sql_1 = " ALTER TABLE company AUTO_INCREMENT=0;"
+    mycursor.execute(sql_Delete_query)
+    mycursor.execute(sql_1)
+    mydb.commit()
+    print("company Deleted successfully ")
+
+def delete1Data():
+    sql_Delete_query = "DELETE FROM quarterly_dataPL;"
+    sql_1 = "ALTER TABLE quarterly_dataPL AUTO_INCREMENT=0;"
+    mycursor.execute(sql_Delete_query)
+    mycursor.execute(sql_1)
+    mydb.commit()
+    print("quarterly_dataPL Deleted successfully ")
+
+    
+def delete2Data():
+    sql_Delete_query = "DELETE FROM quarterly_dataCF;"
+    sql_1 = "ALTER TABLE quarterly_dataCF AUTO_INCREMENT=0;"
+    mycursor.execute(sql_Delete_query)
+    mycursor.execute(sql_1)
+    mydb.commit()
+    print("quarterly_dataCF Deleted successfully ")
+    
+def delete3Data():
+    sql_Delete_query = "DELETE FROM quarterly_dataBS;"
+    sql_1 = "ALTER TABLE quarterly_dataBS AUTO_INCREMENT=0;"
+    mycursor.execute(sql_Delete_query)
+    mycursor.execute(sql_1)
+    mydb.commit()
+    print("quarterly_dataBS Deleted successfully ")
 
 
 def insertData(company_name, stock_price, symbol, previousDay, priceChange, percentChange):
@@ -22,8 +54,7 @@ def company_id():
 
 def insertDataPL(period, revenues, COGS, operating_income, operating_profit, net_income, company_id):
     sql = "INSERT INTO quarterly_dataPL (period, revenues, COGS, operating_income, operating_profit, net_income,company_id) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    val = [(str(period), str(revenues), str(COGS), str(operating_income), str(operating_profit), str(net_income),
-            str(company_id))]
+    val = [(str(period), str(revenues), str(COGS), str(operating_income), str(operating_profit), str(net_income),str(company_id))]
     mycursor.executemany(sql, val)
     mydb.commit()
 
@@ -50,6 +81,3 @@ def revenues():
     id = myresult[0]
     print(id)
     return id
-
-
-mydb.close()
