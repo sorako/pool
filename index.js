@@ -57,15 +57,19 @@ function myFunction(id) {
      return percentage_list ; 
   }     
 
-  $.getJSON('http://54.213.65.49/api/'+id+'').done(function(datas) {
+ $.getJSON('http://54.213.65.49/api/'+id+'').done(function(datas) {
+    var market = ["OTC","NAS","NYS","ASE"]
     var symbol = datas.data[0].symbol
     document.getElementById("demo").innerHTML = datas.data[0].company_name;
     document.getElementById("same").innerHTML = datas.data[0].stock_price +"ドル";
     document.getElementById("priceChange").innerHTML = "前日比 :"+datas.data[0].priceChange +"ドル";
     document.getElementById("percentChange").innerHTML = datas.data[0].percentChange ;
     document.getElementById("percentChange1").innerHTML = datas.data[0].percentChange ;
-    
-    document.getElementById("symbol").innerHTML = datas.data[0].symbol.split('OTC:').join('');  
+    for(i = 0; i < 5 ; i++){
+      if(symbol.includes(market[i])){
+        document.getElementById("symbol").innerHTML = datas.data[0].symbol.split(''+market[i]+':').join('');  
+      }
+    }  
   })
   $.getJSON(ur1).done(function(datas) {
     var i = 0
