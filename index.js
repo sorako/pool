@@ -252,7 +252,7 @@ function charts(arrayLabel,data1,data2,data3){
       data: data3
     }]
   };
-  var ctxBar = document.getElementById("chart-bars").getContext("2d");
+  var ctxBar = document.getElementById("chart-bars");
   if(window.bar != undefined) 
   window.bar.destroy(); 
   window.bar = new Chart(ctxBar, {
