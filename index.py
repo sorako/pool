@@ -2,6 +2,16 @@ import mySql
 import requests
 from bs4 import BeautifulSoup
 from termcolor import colored
+import schedule
+import time
+
+mySql.deleteData()
+
+mySql.delete1Data()
+
+mySql.delete2Data()
+
+mySql.delete3Data()
 
 def unit_exchanger(s):
     """
@@ -75,8 +85,10 @@ def unit_exchanger_fin(ll=None):
 
     return list(map(unit_exchanger, ll))
 
-
-markets = ["GOOGl", "aapl", "abbv", "GWPH","TCNNF","GTBIF","CURLF","KSHB","TLLTF","MMNFF","CRLBF","TLRY","HRVSF","AYRSF","ITHUF"]
+markets = ["GOOGl", "AAPL", "ABBV", "GWPH","TCNNF","GTBIF","CURLF","KSHB","TLLTF","CRLBF","TLRY","HRVSF"
+           ,"AYRSF","ITHUF","GTBIF","MEDIF","APHA","CWBHF","ACRGF","GRWG","SNDL","TRSSF","PLNHF","HSDEF","GGBXF"
+           ,"CVSI","VLNCF","LHSIF","NACNF","IIPR", "MRMD","HEXO","CXXIF","FFLWF","INDXF","LQSIF","CRON","YCBD"
+           ,"VFF","SPRWF","VREOF","MJARF","FFNTF"]
 for i in range(len(markets)):
 
     url = "https://www.marketwatch.com/investing/stock/"+markets[i]+"/financials/income/quarter"
@@ -116,9 +128,9 @@ for i in range(len(markets)):
     print('前日比   　', percentChange)
 
     #save db
-    savesql.insertData( company_name, stock_price, symbol, previousDay, priceChange, percentChange)
+    mySql.insertData( company_name, stock_price, symbol, previousDay, priceChange, percentChange)
     # company id 
-    compamy_id = savesql.company_id()
+    compamy_id = mySql.company_id()
 
     print("###########################")
     print(colored("#####四半期データ  PL  ######", "green"))
@@ -340,7 +352,14 @@ for i in range(len(markets)):
         BS =Total_Asset_Cash_Value[0],  Total_SH_Equity_Value, Capital_Ratio, ROA ,ROE
         mySql.insertDataBS( Total_Asset_Cash_Value[0], Capital_Ratio[0], ROA[0], ROE[0], Total_SH_Equity_Value[0], compamy_id[0])
         print(BS)
-   
+
+# def data_pull():
+#     print("its work")
+
+# def run_schedule():
+#     while True:
+#         schedule.run_pending()
+#         time.sleep(1)   
 
 
 
