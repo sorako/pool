@@ -1,9 +1,14 @@
-
+window.onload = function() {
+  document.getElementById('div1').style.display = 'none';
+  document.getElementById('div2').style.display = 'none';
+  document.getElementById('div3').style.display = 'none';
+  document.getElementById('div4').style.display = 'none';
+  document.getElementById('table').style.display = 'none';
+};
 var url = "http://54.213.65.49/api";
 var ur1 = "http://54.213.65.49/api_pl";
 var ur2 = "http://54.213.65.49/api_bs";
 var ur3 = "http://54.213.65.49/api_cf";
-var id = 0
 var xhr;
 
 if (window.XMLHttpRequest) {
@@ -27,10 +32,12 @@ xhr.onreadystatechange = function () {
 xhr.open("GET", url, true);
 xhr.send();
 
-
 //id avaj company_name uzuuleh
 function myFunction(id) {
-
+  document.getElementById('div1').style.display = 'block';
+  document.getElementById('div2').style.display = 'block';
+  document.getElementById('div3').style.display = 'block';
+  document.getElementById('div4').style.display = 'block';
   function na_judge(calc_list){
   // リスト内に'NA'があった場合に、０を代入することで、グラフ表示でエラーを出さなくする
   // :param calc_list: 売り上げなどのリスト
@@ -57,18 +64,25 @@ function myFunction(id) {
   }     
 
   $.getJSON('http://54.213.65.49/api/'+id+'').done(function(datas) {
-    var substring = "OTC";
-    var substring1 = "NAS";
-    var substring2 = "NYS";
-    var substring3 = "ASE";
     var market = ["OTC","NAS","NYS","ASE"]
-    var symbol = datas.data[0].symbol
+    var units = ['K', 'M', 'B', 'T', 'P', 'E', 'Z', 'Y']
+    var symbol = datas.data[0].symbol;
     document.getElementById("demo").innerHTML = datas.data[0].company_name;
+    document.getElementById("tableNane").innerHTML = datas.data[0].company_name;
     document.getElementById("same").innerHTML = datas.data[0].stock_price +"ドル";
+    for(i = 0; i < 3 ; i++){
+      if(symbol.includes(units[i])){
+        document.getElementById("market_cap").innerHTML = datas.data[0].market_cap.split(''+units[i]+'').join('');  
+      } else {
+         document.getElementById("market_cap").innerHTML = datas.data[0].market_cap.split(''+units[i]+'').join('');  
+      }
+
+    } 
+    
     document.getElementById("priceChange").innerHTML = "前日比 :"+datas.data[0].priceChange +"ドル";
     document.getElementById("percentChange").innerHTML = datas.data[0].percentChange ;
     document.getElementById("percentChange1").innerHTML = datas.data[0].percentChange ;
-    for(i = 0; i < 5 ; i++){
+    for(i = 0; i < 4 ; i++){
       if(symbol.includes(market[i])){
         document.getElementById("symbol").innerHTML = datas.data[0].symbol.split(''+market[i]+':').join('');  
       }
@@ -76,34 +90,41 @@ function myFunction(id) {
   })
   $.getJSON(ur1).done(function(datas) {
     var i = 0
-    arrPeriod = []
-    arrRevenue = []
-    arr_Gross_sales_profit = []
-    arr_Net_income = []
-    testPeriod = []
+    //New Array PL
+    var arrPeriod = [];
+    var arrRevenue = [];
+    var arrCogs = [];
+    var arrSga = [];
+    var arr_Gross_sales_profit = [];
+    var arr_Gross_sales_margin = [];
+    var arr_Net_income = [];
+    var arr_Gross_sales_margin_float = [];
+
+    
     for (i = 0; i < datas.data.length; i++) {
       var company_id = datas.data[i].company_id;
       if(id == company_id){
-        var company = datas.data[i];
-        var period = company.period.toString();
-        var revenue = parseInt(company.revenues);
-        var sales_profit = parseInt(company.operating_income);
-        var net_income = parseInt(company.net_income);
-        arrPeriod.push(period);
-        arrRevenue.push(revenue);
-        arr_Gross_sales_profit.push(sales_profit);
-        arr_Net_income.push(net_income);
+        var pl = datas.data[i];
+        //push array
+        arrPeriod.push(pl.period.toString());
+        arrRevenue.push(parseInt(pl.revenues));
+        arrCogs.push(parseInt(pl.cogs))
+        arrSga.push(parseInt(pl.sga));;
+        arr_Gross_sales_profit.push(pl.sales_profit);
+        arr_Gross_sales_margin.push(pl.sales_margin);
+        arr_Net_income.push(parseInt(pl.net_income));
+        arr_Gross_sales_margin_float.push(pl.Gross_sales_margin_float)
+       
       } 
     }
+    //data set
     var zero_Total_revenue = non_converter(arrRevenue);
     var zero_GSP = non_converter(arr_Gross_sales_profit);
     var netIncome_Value =  non_converter(arr_Net_income); 
-    var arrayLabel = arrPeriod;
-    var data1 = arrRevenue;
-    var data2 = arr_Gross_sales_profit;
-    var data3 = arr_Net_income;
-    charts(arrayLabel,data1,data2,data3);
-   
+
+    // barchart draw 売上/営業利益/純利益
+    charts(arrPeriod,arrRevenue,arr_Gross_sales_profit,arr_Net_income);
+
     var y_min = Math.min.apply(Math, zero_GSP);
     if (Math.min.apply(Math, zero_GSP) <= 0 || Math.min.apply(Math, netIncome_Value)<= 0 ) {
       if(Math.min.apply(Math, zero_GSP) <= Math.min.apply(Math, netIncome_Value)){
@@ -114,175 +135,137 @@ function myFunction(id) {
     }else{
       var y_max = Math.max.apply(Math, zero_GSP) ;
     }
-   
-    total_assets = [];
-    adequacy_ratios = [];
-    roas = [];
-    roes = [];
+    //New Array BS
+    var arr_Total_Asset_Cash_Value = [];
+    var arr_Total_SH_Equity_Value= [];
+    var arr_Capital_Ratio= [];
+    var arr_ROA = [];
+    var arr_ROE = [];
+    var arr_ROA_float = [];
+    var arr_ROE_float = [];
+
+    var arr_Net_OP_Cash_Flow_Value = [];
+    var arr_Net_Inv_CF_Total = []; 
+    var arr_Net_financial_CF = [];
+    var arr_FCF = [];
+    $.getJSON(ur3).done(function(datas) {
+      for (i = 0; i < datas.data.length; i++) {
+        var company_id = datas.data[i].company_id;
+        if(id == company_id){
+          var cf = datas.data[i];
+          arr_Net_OP_Cash_Flow_Value.push(parseInt(cf.Net_Operating_Cash_Flow));
+          arr_Net_Inv_CF_Total.push(parseInt(cf.Net_Financing_Cash_Flow));
+          arr_Net_financial_CF.push(parseInt(cf.Net_Investing_Cash_Flow));
+          arr_FCF.push(parseInt(cf.Quarterly_free_cash_flow))
+        }
+      }
+
+      // barchart draw キャッシュフロー
+      chart(
+            arrPeriod,
+            non_converter(arr_Net_OP_Cash_Flow_Value),
+            non_converter(arr_Net_financial_CF),
+            non_converter(arr_Net_Inv_CF_Total),
+            non_converter(arr_FCF));
+    })
+
     $.getJSON(ur2).done(function(datas) {
       for (i = 0; i < datas.data.length; i++) {
         var company_id = datas.data[i].company_id;
         if(id == company_id){
           var bs = datas.data[i];
-          var total_asset = parseInt(bs.total_asset);
-          total_assets.push(total_asset);
-          var adequacy_ratio =  parseInt(bs.tot_shareholder_equity);
-          adequacy_ratios.push(adequacy_ratio);
-          var roa =  parseInt(bs.ROA);
-          roas.push(roa);
-          var roe =  parseInt(bs.ROE);
-          roes.push(roe);
-        }
-      }
-     
-      var gross_sales_margin_float = [] 
-      for (gs = 0; gs < 5; gs++){
-         if( zero_Total_revenue[gs] == 0){
-            gross_sales_margin_float.push(0);
-         }else{
-            gross_sales_margin_float.push(Math.round(zero_GSP[gs] / arrRevenue[gs], 3));
-         }
-      }
-      var  roa_float = []
-      for (gs = 0; gs < 5; gs++){
-        if(total_assets[gs] == 0){
-          roa_float.push(0);
-        }else{
-          roa_float.push(Math.round(zero_GSP[gs] / total_assets[gs], 3));
-        }
-      }
-      var roe_float = []
-      for (gs = 0; gs < 5; gs++){
-        if(adequacy_ratios[gs] == 0){   
-          roe_float.push(0) 
-        }else{
-          roe_float.push(Math.round(netIncome_Value[gs] / adequacy_ratios[gs], 3))
+           //push array
+          arr_Total_Asset_Cash_Value.push(bs.Total_Asset_Cash_Value);
+          arr_Total_SH_Equity_Value.push(bs.Total_SH_Equity_Value);
+          arr_Capital_Ratio.push(bs.Capital_Ratio);
+          arr_ROA.push(bs.ROA);
+          arr_ROE.push(bs.ROE);
+          arr_ROA_float.push(bs.ROA_float);
+          arr_ROE_float.push(bs.ROE_float);
         }
       }
 
-      var y_min2 = Math.min.apply(Math, gross_sales_margin_float);
-      if(Math.min.apply(Math, gross_sales_margin_float) <= Math.min.apply(Math, roa_float) || Math.min.apply(Math, gross_sales_margin_float) <= Math.min.apply(Math, roe_float)){
-        if(Math.min.apply(Math, gross_sales_margin_float) <= Math.min.apply(Math, roa_float) && Math.min.apply(Math, gross_sales_margin_float) <= Math.min.apply(Math, roe_float)){
-            y_min2 = Math.min.apply(Math, gross_sales_margin_float);
-        }else if( Math.min.apply(Math, roa_float)<= Math.min.apply(Math, gross_sales_margin_float)){
-            y_min2 = Math.min.apply(Math, roa_float);
-        }else{
-             y_min2 = Math.min.apply(Math,roe_float);
-        }
-      } else{
-        y_min2 = 0;
-      }
-     
-      var y_max = 0.5;
-      if(Math.max.apply(Math, gross_sales_margin_float) >= Math.max.apply(Math, roa_float) && Math.max.apply(Math, gross_sales_margin_float) >= Math.max.apply(Math, roe_float)){
-        if(Math.max.apply(Math, gross_sales_margin_float) >= 0){
-          y_max = Math.max.apply(Math, gross_sales_margin_float);
-        } else if( Math.max.apply(Math, roa_float) >= Math.max.apply(Math, roe_float)){
-          if(Math.max.apply(Math, roa_float) <= 0){
-              y_max = max(roa_float);
-            }else{
-              y_max = 0.5;
-          }
-        } else if( Math.max.apply(Math, roe_float) <= 0){
-            y_max = 0.5;
-        }else{
-          y_max = 0.5;
-        }
-      }else{
-        y_max = Math.max.apply(Math,roe_float);
-      }   
-      var data4 = non_converter(gross_sales_margin_float);
-      var data5 = non_converter(roa_float);
-      var data6 = non_converter(roe_float);
-      console.log("data4 "+data4)
-      console.log("data5 "+data5)
-      console.log("data6 "+data6)
-      chartLine(arrayLabel,data4,data5,data6);
-    })  
-    var net_OP_Cash_Flow_Value =[];
-    var net_financial_CF = [];
-    var net_Inv_CF_Total =[];
-    var fcf =[]
-    // Net_Operating_Cash_Flow, Net_Investing_Cash_Flow, Net_Financing_Cash_Flow, Quarterly_free_cash_flow,
-    $.getJSON(ur3).done(function(datas) {
-      for (i = 0; i < datas.data.length; i++) {
-        var company_id = datas.data[i].company_id;
-        if(id == company_id){
-          var bs = datas.data[i];
-          var total_asset = parseInt(bs.Net_Operating_Cash_Flow);
-          net_OP_Cash_Flow_Value.push(total_asset);
-          var adequacy_ratio =  parseInt(bs.Net_Financing_Cash_Flow);
-          net_financial_CF.push(adequacy_ratio);
-          var roa =  parseInt(bs.Net_Investing_Cash_Flow);
-          net_Inv_CF_Total.push(roa);
-          var roe =  parseInt(bs.Quarterly_free_cash_flow);
-          fcf.push(roe);
-        }
-      }
+      // line chart draw
+      chartLine(arrPeriod,
+                arr_Gross_sales_margin_float,
+                arr_ROA_float,
+                arr_ROE_float);
 
-      var y3_min = [];
-      y3_min.push(Math.min.apply(Math,net_OP_Cash_Flow_Value));
-      y3_min.push(Math.min.apply(Math,net_financial_CF));
-      y3_min.push(Math.min.apply(Math,net_Inv_CF_Total));
-      y3_min.push(Math.min.apply(Math,fcf));
-      minifig = Math.min.apply(Math,y3_min);
+      // line chart draw 収益性
+      chartLine2(arrPeriod,
+                arr_Gross_sales_margin_float,
+                arr_ROA_float,
+                arr_ROE_float);
 
-      var y3_max = [];
-      y3_max.push(Math.max.apply(Math,net_OP_Cash_Flow_Value));
-      y3_max.push(Math.max.apply(Math,net_financial_CF));
-      y3_max.push(Math.max.apply(Math,net_Inv_CF_Total));
-      y3_max.push(Math.max.apply(Math,fcf));
-      maxfig = Math.max.apply(Math,y3_max);
-
-      var data6 = non_converter(net_OP_Cash_Flow_Value);
-      var data7 =  non_converter(net_Inv_CF_Total);
-      var data8 =  non_converter(net_financial_CF);
-      var data9 =  non_converter(fcf);
-      chart(arrayLabel,data6,data7,data8,data9);  
-    })  
+      tableDraw(arrPeriod,
+                arrRevenue,
+                arrCogs,
+                arrSga,
+                arr_Gross_sales_profit,
+                arr_Gross_sales_margin,
+                arr_Net_income,
+                arr_Net_OP_Cash_Flow_Value,
+                arr_Net_Inv_CF_Total,
+                arr_Net_financial_CF,
+                arr_FCF,
+                arr_Total_Asset_Cash_Value,
+                arr_Total_SH_Equity_Value,
+                arr_Capital_Ratio,
+                arr_ROA,
+                arr_ROE); 
+    })   
   })  
 } 
+function showStuff(id, text, btn) {
+    document.getElementById(id).style.display = 'block';
+    // hide the lorem ipsum text
+    document.getElementById(text).style.display = 'none';
+    // hide the link
+    btn.style.display = 'none';
+}
+function chartLine(dataPeriod,data4,data5,data6){
+    new Chart(document.getElementById("line-chart"), {
+    type: 'line',
+    scaleStartValue: 0,    
+    data: {
+      labels: dataPeriod,
+      datasets: [{ 
+          data: data4,
+          label: "営業利益率",
+          borderColor: "#F0BE2C",
+          lineTension: 0,
+          fill: false
 
-function chartLine(arrayLabel,data4,data5,data6){
-  new Chart(document.getElementById("line-chart"), {
-  type: 'line',
-  data: {
-    labels: arrayLabel,
-    datasets: [{ 
-        data: data4,
-        label: "営業利益率",
-        borderColor: "#F0BE2C",
-        fill: false
-      }, { 
-        data: data5,
-        label: "ROA",
-        borderColor: "#4331F5",
-        fill: false
-      }, { 
-        data: data6,
-        label: "ROE",
-        borderColor: "#e84d60",
-        fill: false
-      }
-    ]
-  },
-  options: {
-  title: {
-    display: true,
-    text: '収益性'
-  },
-  legend: {
-      position: "bottom",
-      labels: {}
-  },
-  
-    tooltips: {
+        }, { 
+          data: data5,
+          label: "ROA",
+          borderColor: "#4331F5",
+          lineTension: 0,
+          fill: false
+        }, { 
+          data: data6,
+          label: "ROE",
+          borderColor: "#e84d60",
+          lineTension: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+
+    title: {
+      display: true,
+      text: '収益性'
+    },
+    legend: {
+        position: "bottom",
+        align: "end",
+        labels: {}
+    },
+    
+      tooltips: {
       mode: 'label',
       callbacks: {
-        title :function(tooltipItem, data){
-          console.log("::::::::"+tooltipItem.labes);
-          return "期間"+ tooltipItem.yLabel;
-        },
         label: function(tooltipItem, data) {
           var title = data.datasets[tooltipItem.datasetIndex].label;
           function shortenLargeNumber(num, digits) {
@@ -298,10 +281,9 @@ function chartLine(arrayLabel,data4,data5,data6){
           }  
           var value = shortenLargeNumber(tooltipItem.yLabel, 3);
         return  title + ":  $ " + value; }, },
-    },
-    scales: {
-    yAxes: [
-        {
+      },
+      scales: {
+        yAxes: [{
           ticks: {
             callback: function(label, index, labels) {
               function shortenLargeNumber(num, digits) {
@@ -319,16 +301,99 @@ function chartLine(arrayLabel,data4,data5,data6){
               return  shortenLargeNumber(label, 3);
             }
           }
-        }
-      ]
-    }
-  }   
-});
+        }]
+      }
+    }   
+  });
 }
 
-function charts(arrayLabel,data1,data2,data3){
+function chartLine2(dataPeriod,data4,data5,data6){
+    new Chart(document.getElementById("line-chart2"), {
+    type: 'line',
+    scaleStartValue: 0,    
+    data: {
+      labels: dataPeriod,
+      datasets: [{ 
+          data: data4,
+          label: "営業利益率",
+          borderColor: "#F0BE2C",
+          lineTension: 0,
+          fill: false
+
+        }, { 
+          data: data5,
+          label: "ROA",
+          borderColor: "#4331F5",
+          lineTension: 0,
+          fill: false
+        }, { 
+          data: data6,
+          label: "ROE",
+          borderColor: "#e84d60",
+          lineTension: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+
+    title: {
+      display: true,
+      text: '収益性'
+    },
+    legend: {
+        position: "bottom",
+        align: "end",
+        labels: {}
+    },
+    
+      tooltips: {
+      mode: 'label',
+      callbacks: {
+        label: function(tooltipItem, data) {
+          var title = data.datasets[tooltipItem.datasetIndex].label;
+          function shortenLargeNumber(num, digits) {
+            var units = ['k', 'm', 'b', 't', 'p', 'e', 'z', 'y'],
+            decimal;
+            for(var i=units.length-1; i>=0; i--) {
+                decimal = Math.pow(1000, i+1);
+                if(num <= -decimal || num >= decimal) {
+                  return +(num / decimal).toFixed(digits) + units[i];
+                }
+            }
+            return num;
+          }  
+          var value = shortenLargeNumber(tooltipItem.yLabel, 3);
+        return  title + ":  $ " + value; }, },
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            callback: function(label, index, labels) {
+              function shortenLargeNumber(num, digits) {
+                var units = ['k', 'm', 'b', 't', 'p', 'e', 'z', 'y'],
+                decimal;
+                for(var i=units.length-1; i>=0; i--) {
+                  decimal = Math.pow(1000, i+1);
+
+                  if(num <= -decimal || num >= decimal) {
+                      return +(num / decimal).toFixed(digits) + units[i];
+                  }
+                }
+                return num;
+              }
+              return  shortenLargeNumber(label, 3);
+            }
+          }
+        }]
+      }
+    }   
+  });
+}
+
+function charts(dataPeriod,data1,data2,data3){
   var barChartData = {
-    labels: arrayLabel,
+    labels: dataPeriod,
     datasets: [{
       label: '売上',
       backgroundColor: '#3366ff',
@@ -353,19 +418,18 @@ function charts(arrayLabel,data1,data2,data3){
       title: {
         display: true,
         fontStyle: 'bold',
+        align: "start",
         text: "売上/営業利益/純利益"
       },
       legend: {
         position: "bottom",
+        align: "end",
         labels: {}
       },
 
       tooltips: {
         mode: 'label',
         callbacks: {
-          title :function(tooltipItem, data){
-            return "期間"+ tooltipItem.yLabel;
-          },
           label: function(tooltipItem, data) {
             var title = data.datasets[tooltipItem.datasetIndex].label;
             function shortenLargeNumber(num, digits) {
@@ -409,9 +473,9 @@ function charts(arrayLabel,data1,data2,data3){
   });
 }
 
-function chart(arrayLabel,data1,data2,data3,data4){
+function chart(dataPeriod,data1,data2,data3,data4){
   var barChartData = {
-    labels: arrayLabel,
+    labels: dataPeriod,
     datasets: [{
       label: '営業CF',
       backgroundColor: '#3366ff',
@@ -431,7 +495,8 @@ function chart(arrayLabel,data1,data2,data3,data4){
     }]
   };
   var ctx = document.getElementById("barChart");
-  var barChart = new Chart(ctx, {
+  var barChart =
+   new Chart(ctx, {
     type: 'bar',
     data: barChartData,
     options:{
@@ -442,15 +507,12 @@ function chart(arrayLabel,data1,data2,data3,data4){
       },
       legend: {
         position: "bottom",
+        align: "end",
         labels: {}
       },
       tooltips: {
         mode: 'label',
         callbacks: {
-          title :function(tooltipItem, data){
-            console.log("::::::::"+tooltipItem.labes);
-            return "期間"+ tooltipItem.yLabel;
-          },
           label: function(tooltipItem, data) {
             var title = data.datasets[tooltipItem.datasetIndex].label;
             function shortenLargeNumber(num, digits) {
@@ -491,6 +553,99 @@ function chart(arrayLabel,data1,data2,data3,data4){
         ]
       }
     }   
+  });
+}
+
+function showOrHide(rowNumber) { 
+  
+
+    var div = document.getElementById("links_"+ rowNumber);
+    if (div.style.display == "block") 
+    {
+        div.style.display = "none";
+    }
+    else 
+    {
+        div.style.display = "block";
+    }
+                             
+}
+
+function tableDraw( arrPeriod,
+                    arrRevenue,
+                    arrCogs,
+                    arrSga,
+                    arr_Gross_sales_profit,
+                    arr_Gross_sales_margin,
+                    arr_Net_income,
+                    arr_Net_OP_Cash_Flow_Value,
+                    arr_Net_Inv_CF_Total,
+                    arr_Net_financial_CF,
+                    arr_FCF,
+                    arr_Total_Asset_Cash_Value,
+                    arr_Total_SH_Equity_Value,
+                    arr_Capital_Ratio,
+                    arr_ROA,
+                    arr_ROE){
+
+  var Table = document.getElementById("table-body");
+  Table.innerHTML = "";
+
+
+
+  var date = arrPeriod; 
+  date.unshift("期間");
+  arrRevenue.unshift("売上");
+  arrCogs.unshift('販売経費');
+  arrSga.unshift('一般経費');
+  arr_Gross_sales_profit.unshift('営業利益');
+  arr_Gross_sales_margin.unshift('営業利益率');
+  arr_Net_income.unshift("純利益");
+  arr_Net_OP_Cash_Flow_Value.unshift("営業CF");
+  arr_Net_Inv_CF_Total.unshift("投資CF");
+  arr_Net_financial_CF.unshift("財務CF");
+  arr_FCF.unshift("フリーCF");
+  arr_Total_Asset_Cash_Value.unshift("総資産");
+  arr_Total_SH_Equity_Value.unshift("自己資本");
+  arr_Capital_Ratio.unshift("自己資本比率");
+  arr_ROA.unshift("ROA");
+  arr_ROE.unshift("ROE");
+
+  if(arr_Total_Asset_Cash_Value.constructor === Object || arr_Net_OP_Cash_Flow_Value.constructor === Object ){
+    document.getElementById('table').style.display = 'none';
+  }else{
+    document.getElementById('table').style.display = 'block';
+  }
+  let data = [arrPeriod,
+  arrRevenue,
+  arrCogs,
+  arrSga,
+  arr_Gross_sales_profit,
+  arr_Gross_sales_margin,
+  arr_Net_income,
+  arr_Net_OP_Cash_Flow_Value,
+  arr_Net_Inv_CF_Total,
+  arr_Net_financial_CF,
+  arr_FCF,
+  arr_Total_Asset_Cash_Value,
+  arr_Total_SH_Equity_Value,
+  arr_Capital_Ratio,
+  arr_ROA,
+  arr_ROE];
+  
+  let tbody = document.getElementById('table-body');
+  let tr, td;
+
+  data.forEach((element) => {
+      tr = document.createElement('tr');
+      for (let key in element) {
+          if (element.hasOwnProperty(key)) {
+              td = document.createElement('td');
+              td.innerHTML = element[key];
+              tr.appendChild(td);
+          }
+      }
+      tbody.appendChild(tr);
   });
 }  
 
