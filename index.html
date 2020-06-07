@@ -11,23 +11,27 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>  
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-  
-  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 </head>
-<body>
-
+<style type="text/css">
+  table, th, td {
+    border: 1px solid black;
+    size:12px;
+    text-align: right;
+  }
+</style>
+<body >
 
 <div class="container" style="margin-top: 100px;">
   <div class="row" style="margin-bottom: 50px;">
-    <div class="col-sm-4">
-    
+    <div class="col-sm-4"> 
     </div>
     <div class="col-sm-4">
       <select class="action form-control" id="categoryEvent" onchange="myFunction(value)">
       </select>
     </div>
     <div class="col-sm-4">
-     
     </div>
   </div>
 </div>  
@@ -47,33 +51,38 @@
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-sm-3">
-      <div class="card" style="border-color: #337ab7; width:200px; height:150px; color: white;">
+  <div class="row" >
+    <div class="col-sm-3" id="div1">
+      <div class="card" style="border-color: #337ab7; width:200px; height:150px; color: white;background-color: #f1f1f1">
         <h3 style="background-color: #337ab7;width: 100%;height: 100px;"> <p id="same" style="text-align: center; margin-top: 35px;"></p></h3>
         <div class="card-body"style="background-color: #f1f1f1;;color: black;text-align: center;"id="priceChange"></div>
       </div>
     </div>
-    <div class="col-sm-3">
-      <div class="card" style="border-color: #ffbd2e; width:200px; height:150px; color: #8b6e3c;">
-        <h4 style="background-color: #ffbd2e;width: 100%;height: 100px;"> <p id="same" style="text-align: center; margin-top: 35px;"></p></h4>
+    <div class="col-sm-3"  id="div2">
+      <div class="card" style="border-color: #ffbd2e; width:200px; height:150px; color: #8b6e3c;background-color: #f1f1f1">
+        <h4 style="background-color: #ffbd2e;width: 100%;height: 100px;"> <p id="market_cap" style="text-align: center; margin-top: 35px;"></p></h4>
         <div class="card-body"style="background-color: #f1f1f1;color: black;text-align: center;" >時価総額</div>
       </div>
     </div>
-    <div class="col-sm-3">
-      <div class="card" style="border-color: #dcbcbc; width: 200px; height:150px;color: #a75858;">
+    <div class="col-sm-3" id="div3">
+      <div class="card" style="border-color: #dcbcbc; width: 200px; height:150px;color: #a75858;background-color: #f1f1f1">
         <h4 style="background-color: #dcbcbc;width: 100%;height: 100px;"> <p id="percentChange" style="text-align: center; margin-top: 35px;"></p></h4>
-        <div class="card-body"style="background-color: #f1f1f1;color: black;text-align: center;">ROA</div>
+        <div class="card-body" style="background-color: #f1f1f1;color: black;text-align: center;">ROA</div>
       </div>
       <p id="demo"></p>
     </div>
-    <div class="col-sm-3">
-      <div class="card" style="border-color: #dcbcbc; width: 200px;height:150px;color: #a75858;">
+    <div class="col-sm-3" id="div4">
+      <div class="card" style="border-color: #dcbcbc; width: 200px;height:150px;color: #a75858;background-color: #f1f1f1">
         <h4 style="background-color: #dcbcbc;width: 100%;height: 100px;"> <p id="percentChange1" style="text-align: center; margin-top: 35px;"></p></h4>
         <div class="card-body"style="background-color: #f1f1f1;color: black;text-align: center;">ROE</div>
       </div>
       <p id="demo"></p>
     </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+   <canvas id="cahrtLIVE" width="100%" height="200"></canvas>
   </div>
 </div>
 <div class="container">
@@ -92,41 +101,28 @@
     </div>
     
     <div class="col-sm-6">
-      <!-- <div id="chartContainer" style="height: 300px; width: 100%;"></div> -->
+      <canvas id="line-chart2" width="400" height="400"></canvas>
+    
     </div>  
+<div class="container">
+  <div class="row" id="table">
+     <table class="tbl-qa"  width="100%" border="1" style="margin-bottom: 100px; margin-top: 50px;">
+        <thead >
+            <tr>
+                <th class="table-header" style="text-align: center;">企業名:</th>
+                <th class="table-header" id="tableNane" style="text-align: center;"></th>
+                <th class="table-header"style="text-align: center;">All values USD</th>
+                <th class="table-header"></th>
+                <th class="table-header"></th>
+                <th class="table-header"></th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>    
 </div>
 <script type="text/javascript" src="index.js"></script>
-<!-- <script type="text/javascript">
-  window.onload = function () {
-    var chart = new CanvasJS.Chart("chartContainer",
-    {
-      title: {
-        text: "Axis Y labels with Formatted Numbers"
-      },
-      axisY:{    
-        valueFormatString:  “0.0# e0”) -> 1.0 e4 move comma to change formatting
-     },
-      data: [
-      {        
-        type: "column",
-        dataPoints: [
-        { x: 1, y: 710000000},
-        { x: 2, y: 550000000},
-        { x: 3, y: 50000000},
-        { x: 4, y: 65000000 },
-        { x: 5, y: 95000000 },
-        { x: 6, y: 68000000 },
-        { x: 7, y: 28000000 },
-        { x: 8, y: 34000000},
-        { x: 9, y: 14000000}
-        ]
-      }
-      ]
-    });
-
-    chart.render();
-  }
-  </script> -->
 </body>
 </html>
 
